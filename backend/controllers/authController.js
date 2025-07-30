@@ -75,4 +75,38 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+
+    // TODO: send email — for now, log to console
+    console.log('Password reset link:', resetLink);
+
+    res.status(200).json({ message: 'Password reset link sent to email' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Reset password
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(decoded.id, { password: hashedPassword });
+    res.status(200).json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    res.status(400).json({ message: 'Invalid or expired token' });
+  }
+};
+
+module.exports = { registerUser, loginUser, forgotPassword, resetPassword };

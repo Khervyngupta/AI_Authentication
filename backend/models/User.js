@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 
-const isAlphanumeric = (str) => /^[a-zA-Z0-9]+$/.test(str);
-
 const userSchema = new mongoose.Schema(
   {
     email: {
@@ -16,13 +14,8 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
-      validate: {
-        validator: function (value) {
-          return /^[a-zA-Z0-9]+$/.test(value); // Alphanumeric only
-        },
-        message: 'Password must be alphanumeric',
-      },
+      minlength: [6, 'Password must be at least 6 characters']
+      // Removed overly strict validation
     },
   },
   {
